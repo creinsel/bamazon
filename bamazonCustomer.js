@@ -14,14 +14,24 @@ var connection = mysql.createConnection({
 	database: 'bamazon'
 });
 
-connection.connect(function(err) {
-    if (err) throw err;
-    else{
-        console.log('connected on port 3306')
-    }
-});
 
-function diplayInventory(){
+
+function start(){
+    connection.connect(function(err) {
+        if (err) throw err;
+        else{
+            console.log('connected on port 3306')
+        }
+    });
+
+    displayInventory();
+
+
+};
+
+start();
+
+function displayInventory(){
     var query="Select * FROM products";
 
     connection.query(query, function(err, res) {
@@ -33,22 +43,23 @@ function diplayInventory(){
 						res[i].product_name + " || Price: " + res[i].price);
         }
     })
-    buyWhat();
+  setTimeout(() => {
+      buyWhat();
+  },3000); 
 };
-
-diplayInventory();
         
 function buyWhat(){
+
     inquirer.prompt([{
-		name: "productID",
+		name: "item_id",
 		type: "input",
 		message: "Please enter product ID for the product you would like to buy.",
 		validate: function(value) {
 			if (isNaN(value) === false) {
                 return true;
-                // console.log('Please enter a valid ID');
-			}
-			return false;
+            }
+            
+            return false;
 		}
 	}, {
 		name: "howMany",
@@ -60,7 +71,28 @@ function buyWhat(){
 			}
 			return false
 		}
-	}])
-}
+	}]).then(function(answer) {
 
-    
+		// Queries database for selected product.
+		var query = "SELECT * FROM products WHERE ?";
+		connection.query(query, { item_id: answer.item_id}, function(err, res) {
+			
+			if (err) throw err;
+
+		if (res.length === 0) {
+				console.log(' ')
+                console.log('******************************************************');
+                console.log('ERROR: Invalid Item ID. Please select a valid Item ID.');
+                console.log('******************************************************');
+				console.log(' ')
+				displayInventory();
+                
+
+			} else {
+				var productData = res[0];
+
+				console.log(productData)
+			
+	};
+})})};
+
