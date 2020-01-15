@@ -20,7 +20,7 @@ function start(){
     connection.connect(function(err) {
         if (err) throw err;
         else{
-            console.log('connected on port 3306')
+            console.log('\nconnected on port 3306\n')
         }
     });
 
@@ -80,19 +80,47 @@ function buyWhat(){
 			if (err) throw err;
 
 		if (res.length === 0) {
-				console.log(' ')
-                console.log('******************************************************');
+				
+                console.log('\n******************************************************');
                 console.log('ERROR: Invalid Item ID. Please select a valid Item ID.');
-                console.log('******************************************************');
-				console.log(' ')
+                console.log('******************************************************\n');
+			
 				displayInventory();
                 
 
 			} else {
 				var productData = res[0];
+				var quantity=answer.howMany;
 
 				console.log(productData)
+
+				// If the quantity requested by the user is in stock
+				if (quantity <= productData.stock_quantity) {
+					console.log('\nCongratulations, the product you requested is in stock! Placing order!');
+
+					// Construct the updating query string
+					var updateQueryStr = 'UPDATE products SET stock_quantity = ' + (productData.stock_quantity - quantity) + ' WHERE item_id = ' + answer.item_id;
+					// console.log('updateQueryStr = ' + updateQueryStr);
+
+					// Update the inventory
+					connection.query(updateQueryStr, function(err, data) {
+						if (err) throw err;
+
+						console.log('Your oder has been placed! Your total is $' + productData.price * quantity);
+						console.log('Thank you for shopping with us!');
+						console.log("\n**************************************************************************\n");
+
+						// End the database connection
+						connection.end();
+					})
+				} else {
+					console.log('Sorry, there is not enough product in stock to place your order');
+					console.log("\n**************************************************************************\n");
+
+					displayInventory();
+
 			
 	};
-})})};
 
+}})})};	
+	
