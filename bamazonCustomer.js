@@ -1,5 +1,6 @@
 var inquirer = require('inquirer');
 var mysql = require('mysql');
+var Table= require('easy-table');
 
 // Define the MySQL connection parameters
 var connection = mysql.createConnection({
@@ -38,10 +39,15 @@ function displayInventory(){
 
 		if (err) throw err;
 
-		for (var i = 0; i < res.length; i++) {
-			console.log("Product ID: " + res[i].item_id + " || Product Name: " +
-						res[i].product_name + " || Price: " + res[i].price);
-        }
+		var t = new Table
+ 
+	res.forEach(function(product) {
+  	t.cell('Product Id', product.item_id)
+  	t.cell('Product', product.product_name)
+  	t.cell('Price, USD', product.price, Table.number(2))
+  	t.newRow()
+})
+console.log(t.toString());
     })
   setTimeout(() => {
       buyWhat();
